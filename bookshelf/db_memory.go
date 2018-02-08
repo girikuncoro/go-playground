@@ -3,6 +3,7 @@ package bookshelf
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"sync"
 )
 
@@ -76,4 +77,42 @@ func (db *memoryDB) UpdateBook(b *Book) error {
 
 	db.books[b.ID] = b
 	return nil
+}
+
+type booksByTitle []*Book
+
+func (s booksByTitle) Less(i, j int) bool { return s[i].Title < s[j].Title }
+func (s booksByTitle) Len() int           { return len(s) }
+func (s booksByTitle) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+func (db *memoryDB) ListBooks() ([]*Book, error) {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	var books []*Book
+	for _, b := range db.books {
+		books = append(books, b)
+	}
+
+	sort.Sort(booksByTitle(books))
+	return books, nil
+}
+
+func (db *memoryDB) ListBooksCreatedBy(userID string) ([]*Book, error) {
+	if userID == "" {
+		return db.ListBooks()
+	}
+
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	var books []*Book
+	for _, b := range db.books {
+		if b.CreatedByID == userID {
+			books = append(books, b)
+		}
+	}
+
+	sort.Sort(booksByTitle(books))
+	return books, nil
 }
