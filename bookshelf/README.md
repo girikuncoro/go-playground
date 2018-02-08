@@ -1,0 +1,1 @@
+This bookshelf package is originally created in Google to provide samples running app on Google Cloud Platform. I port this by myself to brush up my golang skill.
