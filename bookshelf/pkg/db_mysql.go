@@ -1,5 +1,9 @@
 package bookshelf
 
+import (
+	"database/sql"
+)
+
 var createTableStatements = []string{
 	`CREATE DATABASE IF NOT EXISTS library DEFAULT CHARACTER SET = 'utf8' DEFAULT COLLATE 'utf8_general_ci';`,
 	`USE library;`,
@@ -12,4 +16,23 @@ var createTableStatements = []string{
 		createdById VARCHAR(255) NULL,
 		PRIMARY KEY (id)
 	)`,
+}
+
+type mysqlDB struct {
+	conn   *sql.DB
+	list   *sql.Stmt
+	listBy *sql.Stmt
+	insert *sql.Stmt
+	get    *sql.Stmt
+	update *sql.Stmt
+	delete *sql.Stmt
+}
+
+var _ BookDatabase = &mysqlDB{}
+
+type MySQLConfig struct {
+	Username, Password string
+	Host               string
+	Port               int
+	UnixSocket         string
 }
