@@ -1,9 +1,14 @@
 package bookshelf
 
+import "fmt"
+
 var (
 	DB BookDatabase
 )
 
-func init() {
+func main() {
 	DB = newMemoryDB()
+	fmt.Println("Running DB forever...")
+	for {
+	}
 }

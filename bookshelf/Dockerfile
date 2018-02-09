@@ -1,0 +1,8 @@
+FROM postgres:9.6
+
+ENV POSTGRES_USER giri
+ENV POSTGRES_PASSWORD 123456
+ENV POSTGRES_DB bookshelf_db
+
+# Postgres binds to port 5432
+EXPOSE 5432
