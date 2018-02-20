@@ -102,16 +102,6 @@ func (c MySQLConfig) ensureTableExists() error {
 	return nil
 }
 
-func createTable(conn *sql.DB) error {
-	for _, stmt := range createTableStatements {
-		_, err := conn.Exec(stmt)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (db *mysqlDB) Close() {
 	db.conn.Close()
 }
@@ -163,4 +153,46 @@ func (db *mysqlDB) ListBooks() ([]*Book, error) {
 		books = append(books, book)
 	}
 	return books, nil
+}
+
+const insertStatement = `
+INSERT INTO books (
+	title, author, publishedDate, createdBy, createdById
+) VALUES (?, ?, ?, ?, ?)`
+
+func (db *mysqlDB) AddBook(b *Book) (id int64, err error) {
+	r, err := execAffectingOneRow(db.insert, b.Title, b.Author, b.PublishedDate, b.CreatedBy, b.CreatedByID)
+	if err != nil {
+		return 0, err
+	}
+
+	lastInsertID, err := r.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("mysql: could not get last insert ID; %v", err)
+	}
+	return lastInsertID, nil
+}
+
+func createTable(conn *sql.DB) error {
+	for _, stmt := range createTableStatements {
+		_, err := conn.Exec(stmt)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func execAffectingOneRow(stmt *sql.Stmt, args ...interface{}) (sql.Result, error) {
+	r, err := stmt.Exec(args...)
+	if err != nil {
+		return r, fmt.Errorf("mysql: could not execute statement: %V", err)
+	}
+	rowsAffected, err := r.RowsAffected()
+	if err != nil {
+		return r, fmt.Errorf("mysql: could not get rows affected: %v", err)
+	} else if rowsAffected != 1 {
+		return r, fmt.Errorf("mysql: expected 1 row affected, got %d", rowsAffected)
+	}
+	return r, nil
 }
