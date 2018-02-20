@@ -115,3 +115,52 @@ func createTable(conn *sql.DB) error {
 func (db *mysqlDB) Close() {
 	db.conn.Close()
 }
+
+type rowScanner interface {
+	Scan(dest ...interface{}) error
+}
+
+func scanBook(s rowScanner) (*Book, error) {
+	var (
+		id            int64
+		title         sql.NullString
+		author        sql.NullString
+		publishedDate sql.NullString
+		createdBy     sql.NullString
+		createdByID   sql.NullString
+	)
+	if err := s.Scan(&id, &title, &author, &publishedDate,
+		&createdBy, &createdByID); err != nil {
+		return nil, err
+	}
+
+	book := &Book{
+		ID:            id,
+		Title:         title.String,
+		Author:        author.String,
+		PublishedDate: publishedDate.String,
+		CreatedBy:     createdBy.String,
+		CreatedByID:   createdByID.String,
+	}
+	return book, nil
+}
+
+const listStatement = `SELECT * FROM books ORDER BY title`
+
+func (db *mysqlDB) ListBooks() ([]*Book, error) {
+	rows, err := db.list.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var books []*Book
+	for rows.Next() {
+		book, err := scanBook(rows)
+		if err != nil {
+			return nil, fmt.Errorf("mysql: could not read row: %v", err)
+		}
+		books = append(books, book)
+	}
+	return books, nil
+}
