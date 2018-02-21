@@ -39,11 +39,24 @@ var addBookCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	addCmd.AddCommand(addBookCmd)
+func addBookRun(cli *Cli) error {
+	db, err := cli.dbClient(cli.dbUser, cli.dbPassword, cli.dbHost, cli.dbPort)
+	if err != nil {
+		fmt.Printf("%v", err)
+		return err
+	}
 
-	fls := addBookCmd.Flags()
-	fls.StringVarP(&bookInfo.Title, "title", "t", "", "title for the book")
-	fls.StringVarP(&bookInfo.Author, "author", "a", "", "author of the book")
-	fls.StringVarP(&bookInfo.PublishedDate, "date", "d", "", "published date of the book")
+	newBook := &bk.Book{
+		Title:         bookInfo.Title,
+		Author:        bookInfo.Author,
+		PublishedDate: bookInfo.PublishedDate,
+	}
+	if err := newBook.Validate(); err != nil {
+		fmt.Printf("%v", err)
+		return err
+	}
+
+	db.AddBook(newBook)
+	fmt.Printf("Successfully added new book: %v", newBook)
+	return nil
 }
