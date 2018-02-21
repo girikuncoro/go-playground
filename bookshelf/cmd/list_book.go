@@ -17,6 +17,7 @@ func listBookRun(cli *Cli) error {
 		return err
 	}
 
+	// Print out book sorted on Title
 	for _, book := range books {
 		fmt.Printf("%v\n", book)
 	}
