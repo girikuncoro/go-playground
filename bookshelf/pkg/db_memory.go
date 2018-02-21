@@ -97,22 +97,3 @@ func (db *memoryDB) ListBooks() ([]*Book, error) {
 	sort.Sort(booksByTitle(books))
 	return books, nil
 }
-
-func (db *memoryDB) ListBooksCreatedBy(userID string) ([]*Book, error) {
-	if userID == "" {
-		return db.ListBooks()
-	}
-
-	db.mu.Lock()
-	defer db.mu.Unlock()
-
-	var books []*Book
-	for _, b := range db.books {
-		if b.CreatedByID == userID {
-			books = append(books, b)
-		}
-	}
-
-	sort.Sort(booksByTitle(books))
-	return books, nil
-}
