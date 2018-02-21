@@ -15,6 +15,8 @@ type Cli struct {
 	Cmd  *cobra.Command
 	Args []string
 
+	bookInfo *bk.Book
+
 	rootCmd *cobra.Command
 	v       *viper.Viper
 	addCmd  *addCmd
@@ -55,6 +57,8 @@ func NewCli() *Cli {
 	cli.v.BindPFlag(dbUserKey, cli.rootCmd.PersistentFlags().Lookup("user"))
 	cli.v.BindPFlag(dbPasswordKey, cli.rootCmd.PersistentFlags().Lookup("password"))
 	cli.v.BindPFlag(dbPortKey, cli.rootCmd.PersistentFlags().Lookup("port"))
+
+	cli.bookInfo = &bk.Book{}
 
 	registerAddCmds(cli)
 	registerListCmds(cli)

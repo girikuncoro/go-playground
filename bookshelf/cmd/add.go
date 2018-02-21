@@ -24,7 +24,7 @@ func registerAddCmds(cli *Cli) {
 	cli.rootCmd.AddCommand(addCmd)
 
 	fls := addBookCmd.Flags()
-	fls.StringVarP(&bookInfo.Title, "title", "t", "", "title for the book")
-	fls.StringVarP(&bookInfo.Author, "author", "a", "", "author of the book")
-	fls.StringVarP(&bookInfo.PublishedDate, "date", "d", "", "published date of the book")
+	fls.StringVarP(&cli.bookInfo.Title, "title", "t", "", "title for the book")
+	fls.StringVarP(&cli.bookInfo.Author, "author", "a", "", "author of the book")
+	fls.StringVarP(&cli.bookInfo.PublishedDate, "date", "d", "", "published date of the book")
 }
