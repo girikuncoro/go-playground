@@ -16,8 +16,6 @@ var createTableStatements = []string{
 		title VARCHAR(255) NULL,
 		author VARCHAR(255) NULL,
 		publishedDate VARCHAR(255) NULL,
-		createdBy VARCHAR(255) NULL,
-		createdById VARCHAR(255) NULL,
 		PRIMARY KEY (id)
 	)`,
 }
@@ -36,7 +34,7 @@ type MySQLConfig struct {
 	Port               int
 }
 
-func newMySQLDB(config MySQLConfig) (BookDatabase, error) {
+func NewMySQLDB(config MySQLConfig) (BookDatabase, error) {
 	if err := config.ensureTableExists(); err != nil {
 		return nil, err
 	}
@@ -116,11 +114,8 @@ func scanBook(s rowScanner) (*Book, error) {
 		title         sql.NullString
 		author        sql.NullString
 		publishedDate sql.NullString
-		createdBy     sql.NullString
-		createdByID   sql.NullString
 	)
-	if err := s.Scan(&id, &title, &author, &publishedDate,
-		&createdBy, &createdByID); err != nil {
+	if err := s.Scan(&id, &title, &author, &publishedDate); err != nil {
 		return nil, err
 	}
 
@@ -129,8 +124,6 @@ func scanBook(s rowScanner) (*Book, error) {
 		Title:         title.String,
 		Author:        author.String,
 		PublishedDate: publishedDate.String,
-		CreatedBy:     createdBy.String,
-		CreatedByID:   createdByID.String,
 	}
 	return book, nil
 }
@@ -157,11 +150,11 @@ func (db *mysqlDB) ListBooks() ([]*Book, error) {
 
 const insertStatement = `
 INSERT INTO books (
-	title, author, publishedDate, createdBy, createdById
-) VALUES (?, ?, ?, ?, ?)`
+	title, author, publishedDate
+) VALUES (?, ?, ?)`
 
 func (db *mysqlDB) AddBook(b *Book) (id int64, err error) {
-	r, err := execAffectingOneRow(db.insert, b.Title, b.Author, b.PublishedDate, b.CreatedBy, b.CreatedByID)
+	r, err := execAffectingOneRow(db.insert, b.Title, b.Author, b.PublishedDate)
 	if err != nil {
 		return 0, err
 	}
@@ -186,7 +179,7 @@ func createTable(conn *sql.DB) error {
 func execAffectingOneRow(stmt *sql.Stmt, args ...interface{}) (sql.Result, error) {
 	r, err := stmt.Exec(args...)
 	if err != nil {
-		return r, fmt.Errorf("mysql: could not execute statement: %V", err)
+		return r, fmt.Errorf("mysql: could not execute statement: %v", err)
 	}
 	rowsAffected, err := r.RowsAffected()
 	if err != nil {
