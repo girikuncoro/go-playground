@@ -18,8 +18,7 @@ func main() {
 			log.Print(err)
 			continue
 		}
-		// handle one connection at a time
-		handleConn(conn)
+		go handleConn(conn)
 	}
 }
 
